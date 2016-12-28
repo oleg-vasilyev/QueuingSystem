@@ -6,7 +6,8 @@
   "scripts": {
     "dev-js": "gulp dev-js",
     "dev-css": "gulp dev-css",
-    "watch": "gulp watch"
+    "watch": "gulp watch",
+    "start": "lite-server"
   },
   "devDependencies": {
     "gulp": "3.9.1",
@@ -15,7 +16,9 @@
     "gulp-ignore": "2.0.2",
     "gulp-less": "^3.3.0",
     "gulp-stylus": "^2.6.0",
-    "gulp-watch": "4.3.11"
+    "gulp-watch": "4.3.11",
+    "jquery": "^3.1.1",
+    "lite-server": "^2.2.2"
   },
   "dependencies": {
     "rxjs": "5.0.0-rc.4"

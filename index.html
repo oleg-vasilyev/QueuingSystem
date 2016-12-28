@@ -4,16 +4,29 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Document</title>
+	<link rel="stylesheet" href="chartist.min.css">
 	<link rel="stylesheet" href="styles.css">
+
 </head>
 
 <body>
-
+	<div class="charts hidden">
+		<div>
+			<h1>Probability of failure by several attempts</h1>
+			<div class="probability-failure-chart"></div>
+		</div>
+		<div>
+			<h1>Probability of failure by change source intensity</h1>
+			<div class="delta-source-chart"></div>
+		</div>
+	</div>
 	<div class="loader">
 		<span>{</span><span>}</span>
 	</div>
 
 	<script src="node_modules\rxjs\bundles\Rx.min.js"></script>
+	<script src="node_modules\jquery\dist\jquery.min.js"></script>
+	<script src="chartist.min.js"></script>
 	<script src="main.js"></script>
 
 </body>
