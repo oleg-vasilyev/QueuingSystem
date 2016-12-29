@@ -6,7 +6,8 @@
   "scripts": {
     "dev-js": "gulp dev-js",
     "dev-css": "gulp dev-css",
-    "watch": "gulp watch",
+    "watch-js": "gulp watch-js",
+    "watch-css": "gulp watch-css",
     "start": "lite-server"
   },
   "devDependencies": {

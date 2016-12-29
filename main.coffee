@@ -56,7 +56,6 @@ class TaskManager
 			probability: probability.toFixed(3)
 		}
 
-
 class Source
 	constructor: (@taskManager) ->
 		@onDone = new Rx.Subject()
@@ -82,7 +81,6 @@ class QueuingSystem
 			channels.push(new Channel(id, @channelDistributionFunction))
 		taskManager = new TaskManager(channels, @isDebugMode)
 		source = new Source(taskManager)
-		source.activate(@tasksCount, @sourceDistributionFunction)
 		source.onDone.subscribe ->
 			blueConsole = 'background:#33b5e5; color: white'
 			greenConsole = 'background:#00C851; color: white'
@@ -102,118 +100,145 @@ class QueuingSystem
 					probabilityFailure: statistics.probability
 				})
 			, 300
+		source.activate(@tasksCount, @sourceDistributionFunction)
 		
 class SystemFactory
-	constructor: (@tasksCount, @channelDistributionFunction, @sourceDistributionFunction, @onDoneHandle, @isDebugMode) ->
-	getSystem: (systemName) ->
-		queuingSystem = new QueuingSystem(systemName, @tasksCount, @channelDistributionFunction, @sourceDistributionFunction, @isDebugMode)
-		that = @
-		queuingSystem.onDone.subscribe (data) -> that.onDoneHandle(data)
+	getSystem: (systemName, tasksCount, channelDistributionFunction, sourceDistributionFunction, onDoneHandle, isDebugMode = false) ->
+		queuingSystem = new QueuingSystem(systemName, tasksCount, channelDistributionFunction, sourceDistributionFunction, isDebugMode)
+		queuingSystem.onDone.subscribe (data) -> onDoneHandle(data)
 		return queuingSystem
 
-class ChannelDistributionFunctionFactiry
+class ChannelDistributionFunctionFactory
 	getFunction: (channelIntensity) ->
 		(_channelIntensity = channelIntensity) -> 
-			(-1 / _channelIntensity) * Math.log(Math.random(), Math.E) 
+			(-1 / _channelIntensity) * Math.log(Math.random(), Math.E) * 1
 
-class SourceDistributionFunctionFactiry
+class SourceDistributionFunctionFactory
 	getFunction: (sourceIntensity) ->
-		(_sourceIntensity = @sourceIntensity) -> 
-			(-1 / _sourceIntensity) * Math.log(Math.random(), Math.E) 
+		(_sourceIntensity = sourceIntensity) -> 
+			(-1 / _sourceIntensity) * Math.log(Math.random(), Math.E) * 1
 
+
+
+####### shared data #######
+
+systemFactory = new SystemFactory()
+
+channelDistributionFunctionFactory = new ChannelDistributionFunctionFactory()
+
+sourceDistributionFunctionFactory = new SourceDistributionFunctionFactory()
+
+createChart = (chartName) ->
+	new Chartist.Line ".#{chartName}", null, {
+		fullWidth: true
+		high: 1
+		low: 0
+	}
+
+fillChart = (chart, data) ->
+	systemNames = []
+	probabilityFailures = []
+	info = data
+	info.sort (a, b) -> a.systemName - b.systemName
+	for i in info
+		systemNames.push i.systemName
+		probabilityFailures.push i.probabilityFailure
+	
+	infoForUpdate = {
+		labels: [systemNames...]
+		series: [[probabilityFailures...]]
+	}
+	chart.update(infoForUpdate)
+
+
+####### repetition experiment #######
 
 isDebugMode = false
-tasksCount = 100
+tasksCount = 150
 systemsCount = 5
-channelIntensity = (0.6 / (4 * 3))
-sourceIntensity = 0.75
+channelIntensity = 0.04
+sourceIntensity = 1
 
-onShortSystemsInfoCollectedForProbabilityFalureChart = new Rx.Subject()
-
+probabilityFailureChart = {}
+SSIForProbabilityFalureChart = []
 onDoneGettingInfoForProbabilityFalureChartHandle = (data) ->
-	if not @shortSystemsInfo
-		@shortSystemsInfo = []
-	@shortSystemsInfo.push data
-	if @shortSystemsInfo.length is systemsCount
-		onShortSystemsInfoCollectedForProbabilityFalureChart.next(@shortSystemsInfo)
+	$('.charts').removeClass 'hidden'
+	$('.loader').addClass 'hidden'
+
+	SSIForProbabilityFalureChart.push data
+	if jQuery.isEmptyObject(probabilityFailureChart)
+		probabilityFailureChart = createChart('probability-failure-chart')
+	fillChart(probabilityFailureChart, SSIForProbabilityFalureChart)
 	return @
-onDoneGettingInfoForProbabilityFalureChartHandle.shortSystemsInfo = []
 
-channelDistributionFunctionFactiry = new ChannelDistributionFunctionFactiry()
-channelDistributionFunction = channelDistributionFunctionFactiry.getFunction(channelIntensity)
-
-sourceDistributionFunctionFactiry = new SourceDistributionFunctionFactiry()
-sourceDistributionFunction = sourceDistributionFunctionFactiry.getFunction(sourceIntensity)
-
-systemFactory = new SystemFactory(tasksCount, channelDistributionFunction, sourceDistributionFunction, onDoneGettingInfoForProbabilityFalureChartHandle, isDebugMode)
 
 for systemName in [1..systemsCount]
 	systemFactory
-	.getSystem(systemName)
+	.getSystem(systemName,
+						 tasksCount,
+						 channelDistributionFunctionFactory.getFunction(channelIntensity),
+						 sourceDistributionFunctionFactory.getFunction(sourceIntensity),
+						 onDoneGettingInfoForProbabilityFalureChartHandle,
+						 isDebugMode)
 	.start()
 
-onShortSystemsInfoCollectedForProbabilityFalureChart.subscribe (shortSystemsInfo) ->
-	$('.charts').removeClass 'hidden'
-	$('.loader').addClass 'hidden'
-	systemNames = []
-	probabilityFailures = []
-	shortSystemsInfo.sort (a, b) -> a.systemName - b.systemName
-	for shortSystemInfo in shortSystemsInfo
-		systemNames.push shortSystemInfo.systemName
-		probabilityFailures.push +shortSystemInfo.probabilityFailure
-	probabilityFailureChart = new Chartist.Line '.probability-failure-chart',
-	{
-		labels: [systemNames...]
-		series: [[probabilityFailures...]]
-	},
-	{
-		fullWidth: true
-		lineSmooth: Chartist.Interpolation.cardinal { fillHoles: true }
-		low: 0
-		high: 1
-	}
 
-initialSourceIntensity = 0.75
-finalSourceIntensity = 12.1
-deltaSourceIntensity = 0.15
 
-onShortSystemsInfoCollectedForDeltaSourceChart = new Rx.Subject()
+###### delta source experiment #######
 
+initialSourceIntensity = 0.01
+finalSourceIntensity = 0.5
+deltaSourceIntensity = 0.01
+channelIntensityForDeltasSurceExperiment = 0.01
+
+deltaSourceChart = {}
+SSIForDeltaSourceChart = []
 onDoneGettingInfoForDeltaSourceChartHandle = (data) ->
-	if not @shortSystemsInfo
-		@shortSystemsInfo = []
-	@shortSystemsInfo.push data
-	if @shortSystemsInfo.length > 50 #исправить!
-		onShortSystemsInfoCollectedForDeltaSourceChart.next(@shortSystemsInfo)
+	SSIForDeltaSourceChart.push data
+	if jQuery.isEmptyObject(deltaSourceChart)
+		deltaSourceChart = createChart('delta-source-chart')
+	fillChart(deltaSourceChart, SSIForDeltaSourceChart)
 	return @
-onDoneGettingInfoForDeltaSourceChartHandle.shortSystemsInfo = []
 
-deltaSourceSystemIndex = 0
 for changingSourceIntensity in [initialSourceIntensity..finalSourceIntensity] by deltaSourceIntensity
-	new SystemFactory(tasksCount,
-										channelDistributionFunctionFactiry.getFunction(channelIntensity),
-										sourceDistributionFunctionFactiry.getFunction(changingSourceIntensity),
-										onDoneGettingInfoForDeltaSourceChartHandle)
-										.getSystem(++deltaSourceSystemIndex)
-										.start()
+	systemFactory
+	.getSystem(changingSourceIntensity.toFixed(3),
+						 tasksCount,
+						 channelDistributionFunctionFactory.getFunction(channelIntensityForDeltasSurceExperiment),
+						 sourceDistributionFunctionFactory.getFunction(changingSourceIntensity),
+						 onDoneGettingInfoForDeltaSourceChartHandle)
+	.start()
 
-onShortSystemsInfoCollectedForDeltaSourceChart.subscribe (shortSystemsInfo) ->
-	systemNames = []
-	probabilityFailures = []
-	shortSystemsInfo.sort (a, b) -> a.systemName - b.systemName
-	for shortSystemInfo in shortSystemsInfo
-		systemNames.push shortSystemInfo.systemName
-		probabilityFailures.push +shortSystemInfo.probabilityFailure
-	deltaSourceChart = new Chartist.Line '.delta-source-chart',
-	{
-		labels: [systemNames...]
-		series: [[probabilityFailures...]]
-	},
-	{
-		fullWidth: true
-		lineSmooth: Chartist.Interpolation.cardinal { fillHoles: true }
-		low: 0
-		high: 1
-	}
+
+
+####### delta channel experiment #######
+
+initialChannelIntensity = 0.01
+finalChannelIntensity = 0.1
+deltaChannelIntensity = 0.0025
+sourceIntensityForDeltaChannelExperiment = 1
+
+deltaChannelChart = {}
+SSIForDeltaChannelChart = []
+onDoneGettingInfoForDeltaChannelChartHandle = (data) ->
+	SSIForDeltaChannelChart.push data
+	if jQuery.isEmptyObject(deltaChannelChart)
+		deltaChannelChart = createChart('delta-channel-chart')
+	fillChart(deltaChannelChart, SSIForDeltaChannelChart)
+	return @
+
+for changingChannelIntensity in [initialChannelIntensity..finalChannelIntensity] by deltaChannelIntensity
+	if changingChannelIntensity > finalChannelIntensity
+		break
+	systemFactory
+	.getSystem(changingChannelIntensity.toFixed(3),
+						 tasksCount,
+						 channelDistributionFunctionFactory.getFunction(changingChannelIntensity),
+						 sourceDistributionFunctionFactory.getFunction(sourceIntensity),
+						 onDoneGettingInfoForDeltaChannelChartHandle)
+	.start()
+
+
+
 
 

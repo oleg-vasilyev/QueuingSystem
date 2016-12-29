@@ -26,6 +26,9 @@ gulp.task 'less', ->
 		.pipe less()
 		.pipe gulp.dest './'
 
-gulp.task 'watch', ->
+gulp.task 'watch-js', ->
 	gulp.watch '*.coffee', ['dev-js']
+
+gulp.task 'watch-js', ->
+	gulp.watch '*.styl', ['dev-css']
 
