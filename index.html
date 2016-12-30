@@ -3,35 +3,56 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>Document</title>
+	<title>QSM</title>
+	<link rel="icon" href="icon.png">
 	<link rel="stylesheet" href="chartist.min.css">
 	<link rel="stylesheet" href="styles.css">
 
 </head>
 
 <body>
-	<div class="charts hidden">
-		<div>
-			<h1>Probability of failure by several attempts</h1>
-			<div class="probability-failure-chart"></div>
+
+	<queuing-system>
+		<div class="container charts hidden">
+
+			<div class="page-header">
+				<h2>QueuingSystem<small>model</small></h2>
+			</div>
+
+			<div class="jumbotron">
+				<h2>Probability of failure by several attempts <small class="probability-failure-chart-info"></small></h2>
+				<p>
+					<div class="probability-failure-chart"></div>
+				</p>
+			</div>
+			<div class="jumbotron">
+				<h2>Probability of failure by change source intensity <small class="delta-source-chart-info"></small></h2>
+				<p>
+					<div class="delta-source-chart"></div>
+				</p>
+			</div>
+			<div class="jumbotron">
+				<h2>Probability of failure by change channel intensity <small class="delta-channel-chart-info"></small></h2>
+				<p>
+					<div class="delta-channel-chart"></div>
+				</p>
+			</div>
 		</div>
-		<div>
-			<h1>Probability of failure by change source intensity</h1>
-			<div class="delta-source-chart"></div>
+		<div class="loader">
+			<span>{</span><span>}</span>
 		</div>
-		<div>
-			<h1>Probability of failure by change channel intensity</h1>
-			<div class="delta-channel-chart"></div>
-		</div>
-	</div>
-	<div class="loader">
-		<span>{</span><span>}</span>
-	</div>
+	</queuing-system>
 
 	<script src="node_modules\rxjs\bundles\Rx.min.js"></script>
 	<script src="node_modules\jquery\dist\jquery.min.js"></script>
+	<script src="node_modules\bootstrap\dist\js\bootstrap.min.js"></script>
+	<script src="node_modules\bootstrap-material-design\dist\js\material.min.js"></script>
+	<script src="node_modules\bootstrap-material-design\dist\js\ripples.min.js"></script>
+
 	<script src="chartist.min.js"></script>
 	<script src="main.js"></script>
+
+	<script>$.material.init()</script>
 
 </body>
 

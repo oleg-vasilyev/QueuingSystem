@@ -16,7 +16,6 @@ gulp.task 'dev-js', ->
 gulp.task 'dev-css', ['less'], ->
 	gulp.src 'styles.styl'
 		.pipe stylus({
-			'include css': true,
 			compress: true
 		})
 		.pipe gulp.dest './'

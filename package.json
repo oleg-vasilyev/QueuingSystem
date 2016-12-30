@@ -18,11 +18,13 @@
     "gulp-less": "^3.3.0",
     "gulp-stylus": "^2.6.0",
     "gulp-watch": "4.3.11",
-    "jquery": "^3.1.1",
     "lite-server": "^2.2.2"
   },
   "dependencies": {
-    "rxjs": "5.0.0-rc.4"
+    "rxjs": "5.0.0-rc.4",
+    "bootstrap": "3.3.7",
+    "bootstrap-material-design": "0.5.10",
+    "jquery": "3.1.1"
   },
   "repository": {
     "type": "git",

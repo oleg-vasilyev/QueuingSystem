@@ -87,7 +87,7 @@ class QueuingSystem
 			redConsole = 'background:#ff4444; color: white'
 			setTimeout ->
 				console.log "%c ============================================= ", blueConsole
-				console.log "%c                   SYSTEM №#{that.systemName}                   ", blueConsole
+				console.log "%c                   #{that.systemName}                   ", blueConsole
 				console.log "%c ============================================= ", blueConsole
 				statistics = taskManager.getStatistics()
 				for channelsStatistic in statistics.channelsStatistics
@@ -171,7 +171,7 @@ onDoneGettingInfoForProbabilityFalureChartHandle = (data) ->
 	fillChart(probabilityFailureChart, SSIForProbabilityFalureChart)
 	return @
 
-
+$(".probability-failure-chart-info").text "[si = #{sourceIntensity}; ci = #{channelIntensity}]"
 for systemName in [1..systemsCount]
 	systemFactory
 	.getSystem(systemName,
@@ -187,8 +187,8 @@ for systemName in [1..systemsCount]
 ###### delta source experiment #######
 
 initialSourceIntensity = 0.01
-finalSourceIntensity = 0.5
-deltaSourceIntensity = 0.01
+finalSourceIntensity = 0.2
+deltaSourceIntensity = 0.025
 channelIntensityForDeltasSurceExperiment = 0.01
 
 deltaSourceChart = {}
@@ -200,6 +200,7 @@ onDoneGettingInfoForDeltaSourceChartHandle = (data) ->
 	fillChart(deltaSourceChart, SSIForDeltaSourceChart)
 	return @
 
+$(".delta-source-chart-info").text "[si = from #{initialSourceIntensity} to #{finalSourceIntensity}; ci = #{channelIntensityForDeltasSurceExperiment}]"
 for changingSourceIntensity in [initialSourceIntensity..finalSourceIntensity] by deltaSourceIntensity
 	systemFactory
 	.getSystem(changingSourceIntensity.toFixed(3),
@@ -215,7 +216,7 @@ for changingSourceIntensity in [initialSourceIntensity..finalSourceIntensity] by
 
 initialChannelIntensity = 0.01
 finalChannelIntensity = 0.1
-deltaChannelIntensity = 0.0025
+deltaChannelIntensity = 0.01
 sourceIntensityForDeltaChannelExperiment = 1
 
 deltaChannelChart = {}
@@ -227,6 +228,7 @@ onDoneGettingInfoForDeltaChannelChartHandle = (data) ->
 	fillChart(deltaChannelChart, SSIForDeltaChannelChart)
 	return @
 
+$(".delta-channel-chart-info").text "[si = #{sourceIntensityForDeltaChannelExperiment}; ci = from #{initialChannelIntensity} to #{finalChannelIntensity}]"
 for changingChannelIntensity in [initialChannelIntensity..finalChannelIntensity] by deltaChannelIntensity
 	if changingChannelIntensity > finalChannelIntensity
 		break
